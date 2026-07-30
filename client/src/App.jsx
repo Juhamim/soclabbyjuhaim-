@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
   Shield, Activity, Radio, BookOpen, Flame,
-  GitBranch, Wifi, ShieldCheck, Layers, FileText, Sword
+  GitBranch, Wifi, ShieldCheck, Layers, FileText,
+  ShieldAlert, Award
 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard.jsx';
@@ -13,12 +14,16 @@ import PacketAnalyzer from './pages/PacketAnalyzer.jsx';
 import Playbooks from './pages/Playbooks.jsx';
 import Detection from './pages/Detection.jsx';
 import Reports from './pages/Reports.jsx';
-import RedBlueTeam from './pages/RedBlueTeam.jsx';
+import RedTeam from './pages/RedTeam.jsx';
+import BlueTeam from './pages/BlueTeam.jsx';
+import Evaluation from './pages/Evaluation.jsx';
 
 const NAV_ITEMS = [
   { id: 'dashboard',     label: 'SIEM Dashboard', icon: Activity    },
+  { id: 'redteam',       label: 'Red Team Ops',   icon: ShieldAlert },
+  { id: 'blueteam',      label: 'Blue Team Ops',  icon: ShieldCheck },
+  { id: 'evaluation',    label: 'Knowledge Eval', icon: Award       },
   { id: 'telemetry',     label: 'Host Telemetry', icon: Radio       },
-  { id: 'redblue',       label: 'Red vs Blue',    icon: Sword       },
   { id: 'attacks',       label: 'Cyber Range',    icon: Flame       },
   { id: 'detection',     label: 'Detection',      icon: Layers      },
   { id: 'playbooks',     label: 'SOAR',           icon: ShieldCheck },
@@ -33,6 +38,9 @@ export default function App() {
 
   const pages = {
     dashboard:     <Dashboard />,
+    redteam:       <RedTeam />,
+    blueteam:      <BlueTeam />,
+    evaluation:    <Evaluation />,
     telemetry:     <Telemetry />,
     attacks:       <Attacks />,
     detection:     <Detection />,
@@ -41,7 +49,6 @@ export default function App() {
     packets:       <PacketAnalyzer />,
     academy:       <Academy />,
     reports:       <Reports />,
-    redblue:       <RedBlueTeam />,
   };
 
   return (
@@ -55,7 +62,7 @@ export default function App() {
               <Shield className="w-5 h-5" />
             </div>
             <div className="leading-none">
-              <p className="text-base font-black tracking-tight text-slate-900">SOCLab <span className="text-indigo-600">AI</span></p>
+              <p className="text-base font-black tracking-tight text-slate-900">SOCLab <span className="text-indigo-600">Platform</span></p>
               <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
                 Offline Enterprise SOC
               </p>
