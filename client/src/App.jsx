@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import {
   Shield, Activity, Radio, BookOpen, Flame,
-  GitBranch, Wifi, ShieldCheck, Layers, FileText,
-  Terminal
+  GitBranch, Wifi, ShieldCheck, Layers, FileText, Sword
 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard.jsx';
@@ -14,17 +13,19 @@ import PacketAnalyzer from './pages/PacketAnalyzer.jsx';
 import Playbooks from './pages/Playbooks.jsx';
 import Detection from './pages/Detection.jsx';
 import Reports from './pages/Reports.jsx';
+import RedBlueTeam from './pages/RedBlueTeam.jsx';
 
 const NAV_ITEMS = [
-  { id: 'dashboard',     label: 'SIEM',        icon: Activity    },
-  { id: 'telemetry',     label: 'Telemetry',   icon: Radio       },
-  { id: 'attacks',       label: 'Cyber Range', icon: Flame       },
-  { id: 'detection',     label: 'Detection',   icon: Layers      },
-  { id: 'playbooks',     label: 'SOAR',        icon: ShieldCheck },
-  { id: 'investigation', label: 'Investigate', icon: GitBranch   },
-  { id: 'packets',       label: 'Packets',     icon: Wifi        },
-  { id: 'academy',       label: 'Academy',     icon: BookOpen    },
-  { id: 'reports',       label: 'Reports',     icon: FileText    },
+  { id: 'dashboard',     label: 'SIEM Dashboard', icon: Activity    },
+  { id: 'telemetry',     label: 'Host Telemetry', icon: Radio       },
+  { id: 'redblue',       label: 'Red vs Blue',    icon: Sword       },
+  { id: 'attacks',       label: 'Cyber Range',    icon: Flame       },
+  { id: 'detection',     label: 'Detection',      icon: Layers      },
+  { id: 'playbooks',     label: 'SOAR',           icon: ShieldCheck },
+  { id: 'investigation', label: 'Investigate',    icon: GitBranch   },
+  { id: 'packets',       label: 'Packets',        icon: Wifi        },
+  { id: 'academy',       label: 'Academy',        icon: BookOpen    },
+  { id: 'reports',       label: 'Reports',        icon: FileText    },
 ];
 
 export default function App() {
@@ -40,86 +41,57 @@ export default function App() {
     packets:       <PacketAnalyzer />,
     academy:       <Academy />,
     reports:       <Reports />,
+    redblue:       <RedBlueTeam />,
   };
 
   return (
-    <div className="min-h-screen bg-mesh text-gray-100 font-sans flex flex-col">
-      {/* ── Top Header ─────────────────────────────── */}
-      <header
-        style={{
-          background: 'rgba(8,10,20,0.85)',
-          borderBottom: '1px solid rgba(99,102,241,0.15)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-        }}
-      >
-        <div className="max-w-screen-2xl mx-auto px-5 h-14 flex items-center gap-6">
-          {/* Brand */}
+    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+          {/* Logo Brand */}
           <div className="flex items-center gap-3 shrink-0">
-            <div
-              style={{
-                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                padding: '7px',
-                borderRadius: '10px',
-                boxShadow: '0 0 18px -3px rgba(99,102,241,0.7)',
-              }}
-            >
-              <Shield className="w-4 h-4 text-white" />
+            <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-md shadow-indigo-200">
+              <Shield className="w-5 h-5" />
             </div>
             <div className="leading-none">
-              <p className="text-sm font-black tracking-tight text-white">SOCLab</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: 'rgba(99,102,241,0.8)' }}>
-                Offline · Enterprise
+              <p className="text-base font-black tracking-tight text-slate-900">SOCLab <span className="text-indigo-600">AI</span></p>
+              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                Offline Enterprise SOC
               </p>
             </div>
           </div>
 
-          {/* Nav */}
-          <nav className="flex items-center gap-0.5 flex-1 overflow-x-auto no-scrollbar">
+          {/* Navigation Items */}
+          <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setPage(id)}
                 className={`nav-btn ${page === id ? 'active' : ''}`}
               >
-                <Icon className="w-3 h-3" />
-                {label}
+                <Icon className="w-4 h-4" />
+                <span>{label}</span>
               </button>
             ))}
           </nav>
 
-          {/* Status pill */}
-          <div
-            className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
-            style={{
-              background: 'rgba(16,185,129,0.1)',
-              border: '1px solid rgba(16,185,129,0.3)',
-              color: '#6ee7b7',
-            }}
-          >
-            <span className="pulse-dot w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            Operational
+          {/* Status Badge */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
+            <span className="status-dot online"></span>
+            <span className="hidden sm:inline uppercase text-[10px] tracking-wider">System Active</span>
           </div>
         </div>
       </header>
 
-      {/* ── Page Content ───────────────────────────── */}
-      <main className="flex-1 max-w-screen-2xl w-full mx-auto px-5 py-6 fade-up" key={page}>
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-screen-2xl w-full mx-auto px-6 py-6 fade-up" key={page}>
         {pages[page]}
       </main>
 
-      {/* ── Footer ─────────────────────────────────── */}
-      <footer
-        className="text-center py-3 text-[10px] font-mono uppercase tracking-widest"
-        style={{
-          color: 'rgba(75,85,99,0.7)',
-          borderTop: '1px solid rgba(255,255,255,0.04)',
-        }}
-      >
-        SOCLab Platform · Offline Mode · All data local
+      {/* Footer */}
+      <footer className="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white">
+        SOCLab Platform · 100% Offline Mode · All Telemetry Local
       </footer>
     </div>
   );

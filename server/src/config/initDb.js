@@ -78,6 +78,83 @@ const defaultRules = [
     detection: JSON.stringify({ selection: { process_name: 'vssadmin.exe', raw_payload: 'delete shadows' } }),
     level: 'critical',
     tags: JSON.stringify(['attack.t1486'])
+  },
+  {
+    id: 'SIG-WIN-LSASS-DUMP',
+    title: 'LSASS Process Memory Access (Mimikatz)',
+    status: 'stable',
+    description: 'Detects process access requests to LSASS with suspicious granted access masks',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'process_access', product: 'windows' }),
+    detection: JSON.stringify({ selection: { process_name: 'lsass.exe', raw_payload: 'lsass.dmp' } }),
+    level: 'critical',
+    tags: JSON.stringify(['attack.t1003.001'])
+  },
+  {
+    id: 'SIG-WIN-KERBEROAST',
+    title: 'Kerberoasting TGS Request Anomaly',
+    status: 'stable',
+    description: 'Detects TGS ticket requests with RC4 encryption type indicating Kerberoasting',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'authentication', product: 'windows' }),
+    detection: JSON.stringify({ selection: { event_id: 4769, raw_payload: '0x17' } }),
+    level: 'high',
+    tags: JSON.stringify(['attack.t1558.003'])
+  },
+  {
+    id: 'SIG-WIN-SCHTASK',
+    title: 'Scheduled Task Persistence via Schtasks',
+    status: 'stable',
+    description: 'Detects creation of scheduled tasks with suspicious task paths and PowerShell command lines',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'process_creation', product: 'windows' }),
+    detection: JSON.stringify({ selection: { event_id: 4698, raw_payload: 'powershell' } }),
+    level: 'high',
+    tags: JSON.stringify(['attack.t1053.005'])
+  },
+  {
+    id: 'SIG-WIN-GOLDEN',
+    title: 'Kerberos Golden Ticket Anomalous Logon',
+    status: 'stable',
+    description: 'Detects anomalous Kerberos logons with zero key length indicating forged ticket',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'authentication', product: 'windows' }),
+    detection: JSON.stringify({ selection: { event_id: 4624, raw_payload: 'KeyLength' } }),
+    level: 'critical',
+    tags: JSON.stringify(['attack.t1558.001'])
+  },
+  {
+    id: 'SIG-NET-ARP-SPOOF',
+    title: 'ARP Spoofing Detection',
+    status: 'stable',
+    description: 'Detects ARP cache poisoning events from network monitoring',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'network', product: 'suricata' }),
+    detection: JSON.stringify({ selection: { raw_payload: 'ARP Spoofing' } }),
+    level: 'high',
+    tags: JSON.stringify(['attack.t1557.002'])
+  },
+  {
+    id: 'SIG-WEB-XSS',
+    title: 'Stored XSS Payload Injection',
+    status: 'stable',
+    description: 'Detects script tags in web request bodies indicating cross-site scripting attempts',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'web', product: 'nginx' }),
+    detection: JSON.stringify({ selection: { raw_payload: '<script>' } }),
+    level: 'high',
+    tags: JSON.stringify(['attack.t1189'])
+  },
+  {
+    id: 'SIG-NET-PORTSCAN',
+    title: 'Nmap Reconnaissance Port Scan',
+    status: 'stable',
+    description: 'Detects high-volume SYN packets across multiple ports characteristic of port scanning',
+    author: 'SOCLab Detection Team',
+    logsource: JSON.stringify({ category: 'firewall', product: 'firewall' }),
+    detection: JSON.stringify({ selection: { raw_payload: 'Nmap SYN Scan' } }),
+    level: 'medium',
+    tags: JSON.stringify(['attack.t1046'])
   }
 ];
 

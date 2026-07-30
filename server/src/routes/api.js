@@ -187,6 +187,33 @@ router.get('/telemetry/latest', (req, res) => {
   }
 });
 
+// --- Red/Blue Team Simulation Routes ---
+router.post('/simulation/launch', (req, res) => {
+  const { operationId, team, stage } = req.body;
+  const id = 'SIM-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+  try {
+    db.prepare(`
+      INSERT INTO logs (id, timestamp, source_type, host_name, severity, process_name, user_name, raw_payload, is_simulated)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `).run(id, new Date().toISOString(), 'SIMULATION', 'SIM-CONTROLLER', 'INFO', 'simEngine', 'SOCLab Simulator',
+      JSON.stringify({ operationId, team, stage, event: 'campaign_launch' })
+    );
+    res.json({ success: true, simulationId: id, status: 'launched' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/simulation/score', (req, res) => {
+  res.json({
+    redScore: Math.floor(Math.random() * 40) + 30,
+    blueScore: Math.floor(Math.random() * 40) + 30,
+    mttd: Math.floor(Math.random() * 180) + 30,
+    round: 1,
+    status: 'active'
+  });
+});
+
 // --- SOAR Playbooks ---
 router.post('/soar/execute', (req, res) => {
   const { playbookId, params } = req.body;

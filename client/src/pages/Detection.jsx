@@ -1,81 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, ShieldCheck, ToggleLeft, ToggleRight, Plus, Code } from 'lucide-react';
+import { Layers, ToggleRight, ToggleLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+
+const LEVEL_CLASS = {
+  critical:      'badge badge-critical',
+  high:          'badge badge-high',
+  medium:        'badge badge-medium',
+  low:           'badge badge-low',
+  informational: 'badge badge-info',
+};
 
 export default function Detection() {
   const [rules, setRules] = useState([]);
 
-  const fetchRules = async () => {
+  const fetch_ = async () => {
     try {
-      const res = await fetch('/api/sigma-rules');
-      const data = await res.json();
-      setRules(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-    }
+      const r = await fetch('/api/sigma-rules');
+      const d = await r.json();
+      setRules(Array.isArray(d) ? d : []);
+    } catch { /* silent */ }
   };
 
-  useEffect(() => {
-    fetchRules();
-  }, []);
+  useEffect(() => { fetch_(); }, []);
 
-  const handleToggle = async (id) => {
-    try {
-      await fetch(`/api/sigma-rules/${id}/toggle`, { method: 'PATCH' });
-      fetchRules();
-    } catch (err) {
-      console.error(err);
-    }
+  const toggle = async (id) => {
+    await fetch(`/api/sigma-rules/${id}/toggle`, { method: 'PATCH' });
+    fetch_();
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center">
-            <Layers className="w-6 h-6 text-indigo-600 mr-2" />
-            Detection Engineering & Rule Studio (Sigma / YARA)
-          </h2>
-          <p className="text-xs text-slate-500">Manage active detection rule logic evaluated against real-time system logs</p>
+    <div className="space-y-6 pb-10">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <Layers className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-slate-900">Detection Engineering Studio</h2>
+        </div>
+        <p className="text-xs text-slate-500">
+          Manage Sigma detection rules evaluated in real-time against incoming log telemetry
+        </p>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="metric-card">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Rules</p>
+          <p className="text-2xl font-black text-indigo-600 mt-2">{rules.length}</p>
+        </div>
+        <div className="metric-card">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Rules</p>
+          <p className="text-2xl font-black text-emerald-600 mt-2">{rules.filter(r => r.enabled).length}</p>
+        </div>
+        <div className="metric-card">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Disabled Rules</p>
+          <p className="text-2xl font-black text-red-600 mt-2">{rules.filter(r => !r.enabled).length}</p>
         </div>
       </div>
 
-      <div className="soc-card p-5">
-        <div className="overflow-x-auto border border-slate-200 rounded-lg">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-100 text-slate-700 border-b border-slate-200">
+      {/* Rules Table */}
+      <div className="card p-5">
+        <div className="section-label mb-4">Sigma Rule Registry</div>
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+          <table className="soc-table">
+            <thead>
               <tr>
-                <th className="p-3">Rule ID</th>
-                <th className="p-3">Rule Title</th>
-                <th className="p-3">Level</th>
-                <th className="p-3">Author</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Enabled</th>
+                <th>Rule ID</th>
+                <th>Title / Description</th>
+                <th>Level</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th className="text-right">Enabled</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody>
               {rules.map(r => (
-                <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-bold text-slate-900">{r.id}</td>
-                  <td className="p-3 font-semibold text-slate-800">
-                    {r.title}
-                    <span className="block text-[11px] font-normal text-slate-500">{r.description}</span>
+                <tr key={r.id}>
+                  <td className="font-mono text-xs font-bold text-indigo-600">{r.id}</td>
+                  <td>
+                    <p className="font-semibold text-slate-800">{r.title}</p>
+                    <span className="text-[11px] text-slate-400 block">{r.description}</span>
                   </td>
-                  <td className="p-3">
-                    <span className={r.level === 'critical' ? 'soc-badge-critical' : 'soc-badge-high'}>
-                      {r.level}
-                    </span>
-                  </td>
-                  <td className="p-3 text-slate-600">{r.author || 'SOCLab Team'}</td>
-                  <td className="p-3 text-emerald-700 font-bold">{r.status}</td>
-                  <td className="p-3 text-right">
-                    <button
-                      onClick={() => handleToggle(r.id)}
-                      className="text-slate-700 hover:text-sky-600 p-1"
-                    >
+                  <td><span className={LEVEL_CLASS[r.level] || 'badge badge-info'}>{r.level}</span></td>
+                  <td className="text-slate-500 text-xs">{r.author || 'SOCLab Team'}</td>
+                  <td><span className={`badge ${r.status === 'stable' ? 'badge-stable' : 'badge-experimental'}`}>{r.status}</span></td>
+                  <td className="text-right">
+                    <button onClick={() => toggle(r.id)} className="p-1 hover:opacity-80">
                       {r.enabled ? (
-                        <ToggleRight className="w-7 h-7 text-sky-600" />
+                        <ToggleRight className="w-8 h-8 text-indigo-600" />
                       ) : (
-                        <ToggleLeft className="w-7 h-7 text-slate-400" />
+                        <ToggleLeft className="w-8 h-8 text-slate-300" />
                       )}
                     </button>
                   </td>

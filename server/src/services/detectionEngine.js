@@ -104,15 +104,23 @@ export class DetectionEngine {
   mapTactic(technique) {
     const tacticMap = {
       'T1110': 'Credential Access',
+      'T1003.001': 'Credential Access',
+      'T1558.003': 'Credential Access',
+      'T1557.002': 'Credential Access',
       'T1059': 'Execution',
       'T1059.001': 'Execution',
       'T1190': 'Initial Access',
+      'T1189': 'Initial Access',
       'T1071.004': 'Command and Control',
       'T1486': 'Impact',
       'T1547': 'Persistence',
+      'T1053.005': 'Persistence',
       'T1068': 'Privilege Escalation',
+      'T1558.001': 'Privilege Escalation',
       'T1021': 'Lateral Movement',
-      'T1048': 'Exfiltration'
+      'T1048': 'Exfiltration',
+      'T1046': 'Discovery',
+      'T1566': 'Initial Access'
     };
     return tacticMap[technique] || 'Defense Evasion';
   }

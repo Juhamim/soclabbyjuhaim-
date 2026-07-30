@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert, Activity, Search, RefreshCw, AlertTriangle,
-  CheckCircle, Flame, Layers, Cpu, MemoryStick, Database,
-  TrendingUp, Wifi, X, ChevronRight
+  CheckCircle, Flame, Layers, Cpu, Database, X
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -18,47 +17,34 @@ const SRC_CLASS = {
   windows_event: 'badge src-windows',
   sysmon:        'badge src-sysmon',
   apache:        'badge src-apache',
-  nginx:         'badge src-apache',
+  nginx:         'badge src-nginx',
   zeek:          'badge src-zeek',
   suricata:      'badge src-suricata',
   dns:           'badge src-dns',
   wazuh:         'badge src-wazuh',
 };
 
-function MetricCard({ icon: Icon, label, value, sub, color = '#6366f1', iconBg }) {
+function MetricCard({ icon: Icon, label, value, sub, colorClass = 'text-indigo-600', bgClass = 'bg-indigo-50 border-indigo-100' }) {
   return (
     <div className="metric-card">
       <div className="flex items-start justify-between mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(107,114,128,0.9)' }}>{label}</p>
-        <div className="p-2 rounded-xl" style={{ background: iconBg || 'rgba(99,102,241,0.15)' }}>
-          <Icon className="w-4 h-4" style={{ color }} />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
+        <div className={`p-2.5 rounded-xl border ${bgClass}`}>
+          <Icon className={`w-4 h-4 ${colorClass}`} />
         </div>
       </div>
-      <p className="text-2xl font-black" style={{ color, textShadow: `0 0 20px ${color}55` }}>{value}</p>
-      {sub && <p className="text-[10px] mt-1.5" style={{ color: 'rgba(107,114,128,0.8)' }}>{sub}</p>}
+      <p className={`text-2xl font-black ${colorClass}`}>{value}</p>
+      {sub && <p className="text-[10px] text-slate-400 mt-1">{sub}</p>}
     </div>
   );
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload?.length) {
-    return (
-      <div className="px-3 py-2 rounded-lg text-xs" style={{ background: 'rgba(14,18,32,0.95)', border: '1px solid rgba(99,102,241,0.3)', color: '#c7d2fe' }}>
-        {payload.map(p => (
-          <div key={p.name}><span style={{ color: p.color }}>■</span> {p.name}: <strong>{p.value}%</strong></div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 const MITRE_ITEMS = [
-  { tactic: 'Initial Access',    technique: 'T1190',   name: 'Exploit Public App', col: '#f97316' },
-  { tactic: 'Execution',         technique: 'T1059.001', name: 'PowerShell',       col: '#a855f7' },
-  { tactic: 'Credential Access', technique: 'T1110',   name: 'Brute Force',        col: '#ef4444' },
-  { tactic: 'C2',                technique: 'T1071.004', name: 'DNS Tunneling',    col: '#22d3ee' },
-  { tactic: 'Impact',            technique: 'T1486',   name: 'Ransomware',         col: '#f43f5e' },
+  { tactic: 'Initial Access',    technique: 'T1190',   name: 'Exploit Public App' },
+  { tactic: 'Execution',         technique: 'T1059.001', name: 'PowerShell' },
+  { tactic: 'Credential Access', technique: 'T1110',   name: 'Brute Force' },
+  { tactic: 'C2',                technique: 'T1071.004', name: 'DNS Tunneling' },
+  { tactic: 'Impact',            technique: 'T1486',   name: 'Ransomware' },
 ];
 
 export default function Dashboard() {
@@ -109,103 +95,74 @@ export default function Dashboard() {
   };
 
   const newAlerts = alerts.filter(a => a.status === 'NEW').length;
-  const scoreColor = newAlerts > 5 ? '#f43f5e' : newAlerts > 0 ? '#fb923c' : '#10b981';
 
   return (
-    <div className="space-y-5 pb-10">
-      {/* ── Metric Strip ──────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MetricCard icon={ShieldAlert} label="Active Alerts" value={newAlerts} sub="NEW status" color="#f43f5e" iconBg="rgba(244,63,94,0.15)" />
-        <MetricCard icon={Flame}       label="Threat Level"  value={newAlerts > 3 ? 'CRITICAL' : newAlerts > 0 ? 'ELEVATED' : 'NORMAL'}
-          color={scoreColor} iconBg={`${scoreColor}22`} sub="SOC posture" />
-        <MetricCard icon={Database}    label="Indexed Logs"  value="50,420" sub="Last 7 days" color="#22d3ee" iconBg="rgba(34,211,238,0.12)" />
-        <MetricCard icon={CheckCircle} label="Sec. Score"    value="84/100" sub="Host posture" color="#10b981" iconBg="rgba(16,185,129,0.15)" />
-        <MetricCard icon={Cpu}         label="CPU Load"      value={`${telemetry.cpu_percent}%`} sub="Live" color="#a855f7" iconBg="rgba(168,85,247,0.15)" />
-        <MetricCard icon={MemoryStick || Cpu} label="RAM Load" value={`${telemetry.memory_percent}%`} sub="Live" color="#6366f1" iconBg="rgba(99,102,241,0.15)" />
+    <div className="space-y-6 pb-10">
+      {/* Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <MetricCard icon={ShieldAlert} label="Active Alerts" value={newAlerts} sub="NEW Status" colorClass="text-red-600" bgClass="bg-red-50 border-red-100" />
+        <MetricCard icon={Flame} label="Threat Level" value={newAlerts > 3 ? 'CRITICAL' : newAlerts > 0 ? 'ELEVATED' : 'NORMAL'} sub="SIEM Posture" colorClass={newAlerts > 0 ? "text-amber-600" : "text-emerald-600"} bgClass={newAlerts > 0 ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100"} />
+        <MetricCard icon={Database} label="Indexed Logs" value="50,420" sub="SQLite FTS5" colorClass="text-sky-600" bgClass="bg-sky-50 border-sky-100" />
+        <MetricCard icon={CheckCircle} label="Security Score" value="84/100" sub="Host Posture" colorClass="text-emerald-600" bgClass="bg-emerald-50 border-emerald-100" />
+        <MetricCard icon={Cpu} label="CPU Load" value={`${telemetry.cpu_percent}%`} sub="Real-time" colorClass="text-indigo-600" bgClass="bg-indigo-50 border-indigo-100" />
+        <MetricCard icon={Activity} label="RAM Load" value={`${telemetry.memory_percent}%`} sub="Real-time" colorClass="text-purple-600" bgClass="bg-purple-50 border-purple-100" />
       </div>
 
-      {/* ── Chart + MITRE ─────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Chart */}
-        <div className="glow-card p-5 lg:col-span-2">
+      {/* Charts & MITRE Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Load Chart */}
+        <div className="card p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <div className="section-title m-0">Real-Time System Load</div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: 'rgba(34,211,238,0.12)', color: '#67e8f9', border: '1px solid rgba(34,211,238,0.2)' }}>
-              LIVE · 4s
-            </span>
+            <div className="section-label">Real-Time Workstation Load</div>
+            <span className="badge badge-info">Live 4s</span>
           </div>
-          <div className="h-44">
+          <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="gCpu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gMem" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
                 <XAxis dataKey="time" hide />
                 <YAxis domain={[0, 100]} hide />
-                <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="cpu" stroke="#6366f1" fill="url(#gCpu)" strokeWidth={2} name="CPU %" dot={false} />
-                <Area type="monotone" dataKey="mem" stroke="#22d3ee" fill="url(#gMem)" strokeWidth={2} name="RAM %" dot={false} />
+                <Tooltip />
+                <Area type="monotone" dataKey="cpu" stroke="#4f46e5" fill="#eef2ff" strokeWidth={2} name="CPU %" />
+                <Area type="monotone" dataKey="mem" stroke="#0ea5e9" fill="#e0f2fe" strokeWidth={2} name="RAM %" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex gap-4 mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            {[
-              { label: 'CPU', val: `${telemetry.cpu_percent}%`, col: '#6366f1' },
-              { label: 'RAM', val: `${telemetry.memory_percent}%`, col: '#22d3ee' },
-              { label: 'Sockets', val: telemetry.active_connections || 28, col: '#10b981' },
-            ].map(m => (
-              <div key={m.label} className="flex-1 text-center">
-                <p className="text-[9px] uppercase tracking-widest font-bold mb-0.5" style={{ color: 'rgba(107,114,128,0.8)' }}>{m.label}</p>
-                <p className="text-sm font-black" style={{ color: m.col }}>{m.val}</p>
-              </div>
-            ))}
+          <div className="flex justify-between text-xs text-slate-500 pt-3 mt-2 border-t border-slate-100">
+            <span>CPU: <strong className="text-slate-800">{telemetry.cpu_percent}%</strong></span>
+            <span>RAM: <strong className="text-slate-800">{telemetry.memory_percent}%</strong></span>
+            <span>Sockets: <strong className="text-slate-800">{telemetry.active_connections || 28}</strong></span>
           </div>
         </div>
 
-        {/* MITRE Heatmap */}
-        <div className="glow-card p-5 lg:col-span-3">
+        {/* MITRE Matrix Heatmap */}
+        <div className="card p-5 lg:col-span-3">
           <div className="flex items-center justify-between mb-4">
-            <div className="section-title m-0">MITRE ATT&amp;CK® Live Coverage</div>
-            <span className="text-[10px]" style={{ color: 'rgba(107,114,128,0.7)' }}>5 Techniques Mapped</span>
+            <div className="section-label">MITRE ATT&amp;CK® Live Heatmap</div>
+            <span className="text-xs text-slate-400">Real-Time Detections</span>
           </div>
-          <div className="grid grid-cols-5 gap-2 h-44">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {MITRE_ITEMS.map((item) => {
               const count = mitreCounts[item.technique] || 0;
               const active = count > 0;
               return (
                 <div
                   key={item.technique}
-                  className="relative rounded-xl p-3 flex flex-col justify-between overflow-hidden transition-all"
-                  style={{
-                    background: active ? `${item.col}18` : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${active ? item.col + '50' : 'rgba(255,255,255,0.07)'}`,
-                    boxShadow: active ? `0 0 20px -4px ${item.col}55` : 'none',
-                  }}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    active
+                      ? 'bg-red-50 border-red-200 shadow-sm'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}
                 >
-                  {active && (
-                    <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at top right, ${item.col}, transparent 70%)` }} />
-                  )}
-                  <div>
-                    <p className="text-[8px] uppercase tracking-widest font-bold mb-1" style={{ color: active ? item.col : 'rgba(107,114,128,0.6)' }}>
-                      {item.tactic}
-                    </p>
-                    <p className="text-sm font-black font-mono" style={{ color: active ? item.col : 'rgba(75,85,99,0.8)' }}>
-                      {item.technique}
-                    </p>
-                    <p className="text-[9px] mt-0.5 leading-tight" style={{ color: 'rgba(107,114,128,0.8)' }}>{item.name}</p>
+                  <div className="flex justify-between items-start">
+                    <span className="text-[9px] uppercase font-bold text-slate-400">{item.tactic}</span>
+                    {active && (
+                      <span className="badge badge-critical font-bold text-[9px] px-1.5 py-0.2">
+                        {count}
+                      </span>
+                    )}
                   </div>
-                  {active && (
-                    <div className="mt-2 self-end px-2 py-0.5 rounded-full text-[10px] font-black" style={{ background: `${item.col}25`, color: item.col }}>
-                      ×{count}
-                    </div>
-                  )}
+                  <h5 className="text-xs font-bold text-slate-800 mt-1">{item.technique}</h5>
+                  <p className="text-[10px] text-slate-500 truncate mt-0.5">{item.name}</p>
                 </div>
               );
             })}
@@ -213,99 +170,109 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Alerts Table ──────────────────────────── */}
-      <div className="glow-card p-5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-          <div className="section-title m-0">Live Security Alerts</div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(107,114,128,0.7)' }} />
+      {/* Alerts Table */}
+      <div className="card p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
+              Live Security Alerts Feed
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Search alerts or logs…"
+                placeholder="Filter logs or alert title..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="soc-input pl-8 py-1.5 text-xs w-52"
+                className="soc-input pl-9"
               />
             </div>
-            <button onClick={fetchDashboardData} className="btn-ghost py-1.5 px-2">
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <button onClick={fetchDashboardData} className="btn btn-ghost py-2">
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="soc-table">
             <thead>
               <tr>
                 <th>Alert ID</th>
-                <th>Title</th>
+                <th>Title / Rule</th>
                 <th>Severity</th>
-                <th>Technique</th>
-                <th>Tactic</th>
+                <th>MITRE</th>
                 <th>Status</th>
-                <th className="text-right">Action</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {alerts.length === 0 ? (
-                <tr><td colSpan="7" className="text-center py-10" style={{ color: 'rgba(107,114,128,0.5)' }}>No active alerts. System running clean.</td></tr>
-              ) : alerts.map(a => (
-                <tr key={a.id}>
-                  <td><span className="font-mono text-[10px]" style={{ color: 'rgba(107,114,128,0.7)' }}>{a.id?.slice(-8)}</span></td>
-                  <td>
-                    <p className="font-semibold text-gray-200 text-xs">{a.title}</p>
-                    {a.description && <p className="text-[10px] mt-0.5" style={{ color: 'rgba(107,114,128,0.7)' }}>{a.description?.slice(0, 60)}</p>}
-                  </td>
-                  <td><span className={SEVERITY_CLASS[a.severity] || 'badge badge-info'}>{a.severity}</span></td>
-                  <td><span className="font-mono text-xs font-bold" style={{ color: '#a5b4fc' }}>{a.mitre_technique || '—'}</span></td>
-                  <td><span className="text-[10px]" style={{ color: 'rgba(107,114,128,0.8)' }}>{a.mitre_tactic || '—'}</span></td>
-                  <td>
-                    <span className={`badge ${a.status === 'NEW' ? 'badge-critical' : 'badge-stable'}`}>{a.status}</span>
-                  </td>
-                  <td className="text-right">
-                    <button onClick={() => handleResolve(a.id)} className="btn-ghost py-1 px-2.5 text-[10px]">
-                      <CheckCircle className="w-3 h-3 text-emerald-400" /> Resolve
-                    </button>
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-slate-400">
+                    No active security alerts found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                alerts.map(a => (
+                  <tr key={a.id}>
+                    <td className="font-mono text-xs text-slate-500">{a.id?.slice(-8)}</td>
+                    <td>
+                      <p className="font-semibold text-slate-800">{a.title}</p>
+                      <span className="text-[11px] text-slate-400 block">{a.description}</span>
+                    </td>
+                    <td>
+                      <span className={SEVERITY_CLASS[a.severity] || 'badge badge-info'}>{a.severity}</span>
+                    </td>
+                    <td className="font-mono font-semibold text-indigo-600">{a.mitre_technique || '—'}</td>
+                    <td>
+                      <span className={`badge ${a.status === 'NEW' ? 'badge-new' : 'badge-resolved'}`}>{a.status}</span>
+                    </td>
+                    <td className="text-right">
+                      <button onClick={() => handleResolve(a.id)} className="btn btn-ghost btn-sm">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Resolve</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* ── Log Stream ────────────────────────────── */}
-      <div className="glow-card p-5">
-        <div className="section-title mb-4">
-          <Activity className="w-3.5 h-3.5 text-cyan-400" />
-          Live Log Ingestion Stream
-        </div>
-        <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', maxHeight: '280px' }}>
+      {/* Logs Stream */}
+      <div className="card p-5">
+        <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-indigo-600" />
+          Real-Time Log Ingestion Stream
+        </h3>
+
+        <div className="overflow-x-auto border border-slate-200 rounded-xl max-h-72">
           <table className="soc-table">
             <thead>
               <tr>
-                <th>Time</th>
+                <th>Timestamp</th>
                 <th>Source</th>
                 <th>Host</th>
                 <th>User</th>
                 <th>Src IP</th>
-                <th>Payload Preview</th>
+                <th>Payload</th>
               </tr>
             </thead>
             <tbody>
-              {logs.slice(0, 20).map(l => (
+              {logs.slice(0, 15).map(l => (
                 <tr key={l.id} onClick={() => setSelectedLog(l)}>
-                  <td className="whitespace-nowrap font-mono text-[10px]" style={{ color: 'rgba(107,114,128,0.7)' }}>
-                    {new Date(l.timestamp).toLocaleTimeString()}
-                  </td>
+                  <td className="font-mono text-xs text-slate-400">{new Date(l.timestamp).toLocaleTimeString()}</td>
                   <td><span className={SRC_CLASS[l.source_type] || 'badge src-default'}>{l.source_type}</span></td>
-                  <td className="text-gray-300 font-mono text-[11px]">{l.host_name}</td>
-                  <td className="text-gray-400 text-[11px]">{l.user_name || '—'}</td>
-                  <td className="font-mono text-[11px]" style={{ color: '#67e8f9' }}>{l.src_ip || '127.0.0.1'}</td>
-                  <td className="text-[11px] truncate max-w-xs" style={{ color: 'rgba(107,114,128,0.8)' }}>
-                    {String(l.raw_payload).slice(0, 80)}
-                  </td>
+                  <td className="font-mono text-slate-700">{l.host_name}</td>
+                  <td className="text-slate-600">{l.user_name || '-'}</td>
+                  <td className="font-mono text-sky-600">{l.src_ip || '127.0.0.1'}</td>
+                  <td className="text-slate-500 truncate max-w-xs">{String(l.raw_payload)}</td>
                 </tr>
               ))}
             </tbody>
@@ -313,23 +280,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Log Modal ─────────────────────────────── */}
+      {/* Log Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
-          <div className="glow-card p-6 max-w-2xl w-full space-y-4" style={{ background: 'rgba(10,13,24,0.98)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'rgba(99,102,241,0.7)' }}>Raw Log Payload</p>
-                <p className="text-sm font-bold text-white mt-0.5">{selectedLog.id}</p>
-              </div>
-              <button onClick={() => setSelectedLog(null)} className="btn-ghost p-2">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-slate-900 text-sm">Log Payload ({selectedLog.id})</h3>
+              <button onClick={() => setSelectedLog(null)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <pre
-              className="rounded-xl p-4 text-xs font-mono overflow-auto max-h-80 leading-relaxed"
-              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(99,102,241,0.2)', color: '#6ee7b7' }}
-            >
+            <pre className="code-block max-h-80">
               {JSON.stringify(JSON.parse(selectedLog.raw_payload || '{}'), null, 2)}
             </pre>
           </div>

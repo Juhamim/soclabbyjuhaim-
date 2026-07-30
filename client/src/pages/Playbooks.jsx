@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
-import { Play, CheckCircle, Shield, AlertOctagon, Terminal } from 'lucide-react';
+import { ShieldCheck, Play, CheckCircle, Zap, User, Server, Ban } from 'lucide-react';
 
 const PLAYBOOKS = [
-  { id: 'PB-BLOCK-IP', title: 'Block IP Address', description: 'Applies firewall block rule & updates SIEM IP blocklist.', paramName: 'ipAddress', defaultVal: '185.220.101.5' },
-  { id: 'PB-KILL-PROC', title: 'Kill Process', description: 'Terminates process by PID or executable name.', paramName: 'processName', defaultVal: 'powershell.exe' },
-  { id: 'PB-DISABLE-USER', title: 'Disable User Account', description: 'Disables user credentials & revokes session tokens.', paramName: 'username', defaultVal: 'administrator' },
-  { id: 'PB-ISOLATE-HOST', title: 'Isolate Host', description: 'Enables strict host isolation firewall policies.', paramName: 'hostName', defaultVal: 'DC-PRIMARY-01' }
+  { id: 'PB-BLOCK-IP',     title: 'Block IP Address',     desc: 'Applies firewall block rule for inbound/outbound traffic and updates SIEM blocklist.', paramName: 'ipAddress',    default: '185.220.101.5',  icon: Ban },
+  { id: 'PB-KILL-PROC',   title: 'Kill Process',         desc: 'Terminates suspicious process by name or PID. Audits process tree.',                  paramName: 'processName', default: 'powershell.exe', icon: Zap },
+  { id: 'PB-DISABLE-USER', title: 'Disable User Account', desc: 'Disables user credentials and revokes all active session tokens.',                   paramName: 'username',    default: 'administrator',  icon: User },
+  { id: 'PB-ISOLATE-HOST', title: 'Isolate Host',         desc: 'Enables strict network isolation firewall policies on target host.',                  paramName: 'hostName',    default: 'DC-PRIMARY-01',  icon: Server },
 ];
 
 export default function Playbooks() {
-  const [params, setParams] = useState({
-    ipAddress: '185.220.101.5',
-    processName: 'powershell.exe',
-    username: 'administrator',
-    hostName: 'DC-PRIMARY-01'
-  });
+  const [params, setParams] = useState({ ipAddress: '185.220.101.5', processName: 'powershell.exe', username: 'administrator', hostName: 'DC-PRIMARY-01' });
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(null);
 
@@ -24,84 +19,89 @@ export default function Playbooks() {
       const res = await fetch('/api/soar/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          playbookId: pb.id,
-          params: { [pb.paramName]: params[pb.paramName] }
-        })
+        body: JSON.stringify({ playbookId: pb.id, params: { [pb.paramName]: params[pb.paramName] } }),
       });
       const data = await res.json();
-      setLogs(prev => [data, ...prev]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(null);
-    }
+      setLogs(prev => [{ ...data, time: new Date().toLocaleTimeString() }, ...prev]);
+    } catch { /* silent */ }
+    finally { setLoading(null); }
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-10">
       <div>
-        <h2 className="text-xl font-bold text-slate-900 flex items-center">
-          <Shield className="w-6 h-6 text-sky-600 mr-2" />
-          SOAR Automated Containment Playbooks
-        </h2>
-        <p className="text-xs text-slate-500">Execute automated response actions to neutralize active security threats</p>
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldCheck className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-slate-900">SOAR Automated Playbooks</h2>
+        </div>
+        <p className="text-xs text-slate-500">
+          Execute automated response playbooks to neutralize active security threats
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {PLAYBOOKS.map(pb => (
-          <div key={pb.id} className="soc-card p-5 space-y-4 flex flex-col justify-between">
-            <div>
-              <span className="text-xs font-mono font-bold text-sky-700 uppercase">{pb.id}</span>
-              <h3 className="text-base font-bold text-slate-900 mt-1">{pb.title}</h3>
-              <p className="text-xs text-slate-600 mt-1">{pb.description}</p>
+        {PLAYBOOKS.map(pb => {
+          const Icon = pb.icon;
+          const isRunning = loading === pb.id;
+          return (
+            <div key={pb.id} className="card p-5 flex flex-col justify-between space-y-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-indigo-600 uppercase">{pb.id}</span>
+                    <h3 className="text-sm font-bold text-slate-900">{pb.title}</h3>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">{pb.desc}</p>
 
-              <div className="mt-3">
-                <label className="text-[11px] font-semibold text-slate-700 uppercase">Target Value ({pb.paramName}):</label>
-                <input
-                  type="text"
-                  value={params[pb.paramName]}
-                  onChange={e => setParams({ ...params, [pb.paramName]: e.target.value })}
-                  className="w-full mt-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
+                <div className="mt-4">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Target ({pb.paramName})
+                  </label>
+                  <input
+                    type="text"
+                    value={params[pb.paramName]}
+                    onChange={e => setParams({ ...params, [pb.paramName]: e.target.value })}
+                    className="soc-input font-mono"
+                  />
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => handleExecute(pb)}
-              disabled={loading === pb.id}
-              className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <Play className={`w-4 h-4 ${loading === pb.id ? 'animate-spin' : ''}`} />
-              <span>{loading === pb.id ? 'Executing...' : 'Run Playbook'}</span>
-            </button>
-          </div>
-        ))}
+              <button
+                onClick={() => handleExecute(pb)}
+                disabled={!!loading}
+                className="btn btn-primary w-full justify-center py-2.5"
+              >
+                {isRunning ? <><Zap className="w-4 h-4 animate-pulse" /> Executing...</> : <><Play className="w-4 h-4" /> Run Playbook</>}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Execution Results Audit */}
-      <div className="soc-card p-5">
-        <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center">
-          <Terminal className="w-4 h-4 text-emerald-600 mr-2" />
-          Playbook Execution Audit Log
-        </h3>
-        <div className="space-y-3 font-mono text-xs">
-          {logs.length === 0 ? (
-            <p className="text-slate-400 text-center py-4">No playbooks executed yet. Select a playbook above.</p>
-          ) : (
-            logs.map((l, idx) => (
-              <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-                <div className="flex justify-between items-center text-slate-900 font-bold border-b border-slate-200 pb-2">
-                  <span>{l.playbook} (Target: {l.target})</span>
-                  <span className="text-emerald-700 text-[11px]">STATUS: EXECUTED</span>
+      {/* Execution Audit */}
+      <div className="card p-5">
+        <div className="section-label mb-4">Playbook Execution Audit</div>
+        {logs.length === 0 ? (
+          <p className="text-center py-8 text-sm text-slate-400">No playbooks executed yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {logs.map((l, i) => (
+              <div key={i} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 font-mono text-xs">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <span className="font-bold text-slate-900">{l.playbook} (Target: {l.target})</span>
+                  <span className="badge badge-stable">STATUS: EXECUTED</span>
                 </div>
-                <ul className="space-y-1 text-slate-700 pl-4 list-disc">
-                  {l.actions?.map((act, i) => <li key={i}>{act}</li>)}
+                <ul className="space-y-1 text-slate-600 pl-4 list-disc">
+                  {l.actions?.map((act, j) => <li key={j}>{act}</li>)}
                 </ul>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
