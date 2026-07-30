@@ -1,0 +1,31 @@
+{
+  "name": "soclab-ai",
+  "version": "1.0.0",
+  "description": "SOCLab AI - Offline Security Operations Center (SOC) Learning, Simulation, Detection & Incident Response Platform",
+  "main": "server/src/index.js",
+  "scripts": {
+    "setup": "npm run setup:server && npm run setup:client && npm run init:db",
+    "setup:server": "cd server && npm install",
+    "setup:client": "cd client && npm install",
+    "init:db": "node server/src/config/initDb.js",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run telemetry\"",
+    "server": "cd server && npm start",
+    "client": "cd client && npm run dev",
+    "telemetry": "python telemetry/agent.py"
+  },
+  "keywords": [
+    "soc",
+    "siem",
+    "cybersecurity",
+    "threat-hunting",
+    "mitre-attack",
+    "sigma-rules",
+    "cyber-range",
+    "digital-forensics"
+  ],
+  "author": "SOCLab AI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
